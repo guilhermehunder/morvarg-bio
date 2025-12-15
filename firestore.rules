@@ -1,0 +1,95 @@
+
+/**
+ * @file firestore.rules
+ * @description Firestore Security Rules for a public website with a private admin panel.
+ *
+ * @version 1.1.0
+ *
+ * ## Core Philosophy
+ * This ruleset enforces a simple but secure content management model. All website
+ * content is publicly readable by any user, including anonymous visitors. However, all
+ * write operations (creating, updating, or deleting content) are strictly limited to
+ * a single, designated administrator account. This ensures the public site is always
+ * available while preventing unauthorized modifications.
+ *
+ * ## Data Structure
+ * - /siteContent/{siteContentId}: Contains the main configuration for the website.
+ * - /siteContent/{siteContentId}/cards/{cardId}: Stores individual content cards.
+ * - /settings/admin: A document to control admin registration.
+ *
+ * ## Key Security Decisions
+ * - Public Reads for Site Content: `siteContent` and its subcollections are
+ *   publicly readable (`get`, `list`) for the website to function.
+ * - Public Read for Registration Check: The `/settings/admin` document is publicly
+ *   readable so the registration page can check if an admin account already exists
+ *   before a user signs in.
+ * - Admin-Only Writes: All write access (`create`, `update`, `delete`) is
+ *   controlled by a global `isAdmin()` function.
+ *   **ACTION REQUIRED:** Replace the placeholder UID in `isAdmin()` with the
+ *   actual Firebase Authentication admin user's UID.
+ *
+ */
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * Checks if a user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user is the designated site administrator.
+     *
+     * @returns {boolean} True if the user's UID matches the admin UID.
+     *
+     * CRITICAL: You MUST replace 'PUT_ADMIN_UID_HERE' with the actual
+     * UID of the administrator account from the Firebase Authentication console.
+     */
+    function isAdmin() {
+      return isSignedIn() && request.auth.uid == '8rcdh4G675XiXGWs3Il99C3b0tB2';
+    }
+
+    // ------------------------------------------------------------------------
+    // Collection Rules
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Rules for the main site content document (e.g., `/siteContent/home`).
+     */
+    match /siteContent/{siteContentId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Rules for the individual content cards stored in a subcollection.
+     */
+    match /siteContent/{siteContentId}/cards/{cardId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Rules for the admin registration settings document.
+     * @path /settings/admin
+     * @allow (get) Any user can read this to check if registration is locked.
+     * @allow (create) Only an admin can create this document to lock registration.
+     * @principle Public Read for Functionality, Restricted Write for Security.
+     * The registration page needs to know if an admin account exists. Writes
+     * are locked down to prevent unauthorized users from locking/unlocking registration.
+     */
+    match /settings/admin {
+      allow get: if true;
+      allow create: if isAdmin();
+      // Update/Delete are not expected operations for this simple lock.
+    }
+  }
+}

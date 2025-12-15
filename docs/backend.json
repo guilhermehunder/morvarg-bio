@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "SiteContent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SiteContent",
+      "type": "object",
+      "description": "Stores all the content for the website, including hero image, profile information, and link card details.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the site content document. (Primary Key)"
+        },
+        "heroImageUrl": {
+          "type": "string",
+          "description": "URL of the hero image displayed at the top of the page."
+        },
+        "profileImageUrl": {
+          "type": "string",
+          "description": "URL of the profile image."
+        },
+        "subtitleText": {
+          "type": "string",
+          "description": "Subtitle text displayed under the profile name."
+        },
+        "cards": {
+          "type": "array",
+          "description": "Array of card objects representing links.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "Card": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Card",
+      "type": "object",
+      "description": "Represents a single link card in the list of links.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the card. (Primary Key)"
+        },
+        "siteContentId": {
+          "type": "string",
+          "description": "Reference to SiteContent. (Relationship: SiteContent 1:N Card)"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the link card."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description text for the link card."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the image associated with the link card."
+        },
+        "linkUrl": {
+          "type": "string",
+          "description": "URL that the link card points to."
+        },
+        "order": {
+          "type": "number",
+          "description": "Order of card appearence"
+        }
+      },
+      "required": [
+        "id",
+        "siteContentId"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/siteContent/{siteContentId}",
+        "definition": {
+          "entityName": "SiteContent",
+          "schema": {
+            "$ref": "#/backend/entities/SiteContent"
+          },
+          "description": "Stores site-wide content like hero image URL, profile image URL, subtitle text, and references to card IDs. There will only be one document on this collection named 'home'.",
+          "params": [
+            {
+              "name": "siteContentId",
+              "description": "The unique ID of site content document. Expected value is 'home'."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/siteContent/{siteContentId}/cards/{cardId}",
+        "definition": {
+          "entityName": "Card",
+          "schema": {
+            "$ref": "#/backend/entities/Card"
+          },
+          "description": "Stores individual card details (title, description, image URL, link URL, order).",
+          "params": [
+            {
+              "name": "siteContentId",
+              "description": "The unique ID of the siteContent document to which this card belongs. Expected value is 'home'."
+            },
+            {
+              "name": "cardId",
+              "description": "The unique ID of the card."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to store website content, including the hero image URL, profile information, subtitle text, and link cards. The structure prioritizes authorization independence and simple security rules.\n\nThe core collection is `siteContent`, with a single document named `home` storing the main website information.  Individual `Card` documents are stored in a subcollection of `siteContent/home/cards`.\n\n*Authorization Independence:*\nAuthorization is achieved through path-based rules.  The admin panel uses Firebase Authentication. The admin user, upon successful login, can modify the data in `siteContent/home` and its subcollection `siteContent/home/cards/{cardId}`. Since there is only one document, more complex security rules aren't necessary, simplifying data management and security.\n\n*QAPs Support:*\nThe structure supports the required features.  Segregation is used; the admin panel and the website content are logically separated by using specific collections. This separation simplifies data reads for the website. The `onSnapshot()` method allows real-time updates without needing complex queries or filters."
+  }
+}
