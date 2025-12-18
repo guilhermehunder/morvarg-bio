@@ -11,9 +11,10 @@ interface PeripheralsDrawerProps {
   peripherals: Peripheral[];
   subtitle?: string;
   cardImage?: string;
+  title?: string;
 }
 
-export function PeripheralsDrawer({ peripherals, subtitle, cardImage }: PeripheralsDrawerProps) {
+export function PeripheralsDrawer({ peripherals, subtitle, cardImage, title }: PeripheralsDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -67,13 +68,13 @@ export function PeripheralsDrawer({ peripherals, subtitle, cardImage }: Peripher
       >
         <Image
           src={cardImage || 'https://i.imgur.com/Xbiudsl.png'}
-          alt="My Peripherals"
+          alt={title || 'My Peripherals'}
           width={1600}
           height={600}
           className="w-full h-auto object-cover rounded-t-lg"
         />
         <div className="p-4 text-white text-center">
-          <h2 className="text-2xl font-bold">Breakdown of my workstation</h2>
+          <h2 className="text-2xl font-bold">{title || 'Breakdown of my workstation'}</h2>
           <p className="text-sm opacity-90">{subtitle || 'Complete workstation essentials'}</p>
           <div className="flex items-center justify-center mt-2">
             <ChevronDown className={`h-6 w-6 text-white transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`} />

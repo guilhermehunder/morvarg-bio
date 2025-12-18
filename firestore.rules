@@ -34,12 +34,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ------------------------------------------------------------------------
-    // Helper Functions
-    // ------------------------------------------------------------------------
-
     /**
-     * Checks if a user is authenticated.
+     * Checks if the user is authenticated.
      */
     function isSignedIn() {
       return request.auth != null;
@@ -47,16 +43,11 @@ service cloud.firestore {
 
     /**
      * Checks if the authenticated user is the designated site administrator.
-     *
-     * @returns {boolean} True if the user's UID matches the admin UID.
-     *
-     * CRITICAL: You MUST replace 'PUT_ADMIN_UID_HERE' with the actual
-     * UID of the administrator account from the Firebase Authentication console.
      */
     function isAdmin() {
+      // Admin UID: firesticknw@gmail.com
       return isSignedIn() && request.auth.uid == '8rcdh4G675XiXGWs3Il99C3b0tB2';
     }
-
     // ------------------------------------------------------------------------
     // Collection Rules
     // ------------------------------------------------------------------------
