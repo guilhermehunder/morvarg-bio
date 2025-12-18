@@ -17,17 +17,32 @@ export default function LinksPage() {
     const [isMuted, setIsMuted] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
 
-    const { config, isLoading } = usePublicSiteConfig();
+    const { config: remoteConfig, isLoading } = usePublicSiteConfig();
+    const [previewConfig, setPreviewConfig] = useState<any | null>(null); // Use any temporarily to avoid import issues if SiteConfig is not exported here
+
+    // Merge remote config with preview config
+    const config = previewConfig || remoteConfig;
+
+    // Listen for preview updates from admin
+    useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data?.type === 'PREVIEW_UPDATE' && event.data.config) {
+                setPreviewConfig(event.data.config);
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
 
     useEffect(() => {
-        if (!containerRef.current || isLoading) return;
+        if (!containerRef.current || (isLoading && !previewConfig)) return; // Only block if loading AND no preview config
 
         gsap.fromTo(
             ".fade-in",
             { opacity: 0, y: 20 },
             { opacity: 1, y: 0, duration: 0.8, stagger: 0.15, ease: 'power3.out', delay: 0.5 }
         );
-    }, [isLoading]);
+    }, [isLoading, previewConfig]);
 
     useEffect(() => {
         const audio = audioRef.current;

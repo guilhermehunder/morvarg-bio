@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AuthGuard } from '@/components/auth-guard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -729,12 +729,32 @@ function ProfileEditor({ config, updateConfig }: EditorProps) {
 }
 
 // --- Live Preview (Phone Mockup) ---
-function LivePreview({ externalRefreshKey }: { externalRefreshKey?: number }) {
+function LivePreview({ externalRefreshKey, config }: { externalRefreshKey?: number, config: SiteConfig }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Combined refresh key (internal + external)
   const combinedKey = refreshKey + (externalRefreshKey || 0);
+
+  // Send config updates to iframe
+  useEffect(() => {
+    if (iframeRef.current?.contentWindow && config) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'PREVIEW_UPDATE',
+        config
+      }, '*');
+    }
+  }, [config, combinedKey]);
+
+  const handleLoad = () => {
+    if (iframeRef.current?.contentWindow && config) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'PREVIEW_UPDATE',
+        config
+      }, '*');
+    }
+  };
 
   // Prevent parent scroll when hovering over preview
   const handleWheel = (e: React.WheelEvent) => {
@@ -775,6 +795,8 @@ function LivePreview({ externalRefreshKey }: { externalRefreshKey?: number }) {
 
               {/* Iframe - Interactive scroll */}
               <iframe
+                ref={iframeRef}
+                onLoad={handleLoad}
                 key={combinedKey}
                 src="/"
                 className="w-full h-full border-0"
@@ -1501,7 +1523,7 @@ export default function AdminPage() {
 
             {/* Preview Panel - Fixed */}
             <div className="hidden xl:flex w-[420px] border-l border-gray-800/50 bg-gradient-to-b from-[#0d0d14] to-[#0a0a0f] sticky top-0 h-full">
-              <LivePreview externalRefreshKey={previewRefreshKey} />
+              <LivePreview externalRefreshKey={previewRefreshKey} config={config} />
             </div>
           </main>
         </div>
