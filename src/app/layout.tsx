@@ -25,15 +25,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${medievalsharp.variable}`}>
+    <html lang="en" className={`dark ${inter.variable} ${medievalsharp.variable}`} suppressHydrationWarning>
       <head>
         <title>LuminLink</title>
         <meta name="description" content="All my links in one place." />
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased" suppressHydrationWarning>
         <FirebaseClientProvider>
           <div className="fixed inset-0 z-[-2]">
-          <Image
+            <Image
               src="https://i.imgur.com/NBReecb.png"
               alt="Mystical background"
               fill

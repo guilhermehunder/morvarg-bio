@@ -78,6 +78,17 @@ service cloud.firestore {
     }
 
     /**
+     * @description Rules for the site configuration (dashboard settings).
+     * @path /site/{siteId}
+     * @allow (get, list) Any user can read site config for public page.
+     * @allow (create, update) Only admin can modify site settings.
+     */
+    match /site/{siteId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
      * @description Rules for the admin registration settings document.
      * @path /settings/admin
      * @allow (get) Any user can read this to check if registration is locked.
