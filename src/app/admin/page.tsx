@@ -41,6 +41,7 @@ import {
   Tags,
   FileText,
   Share2,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -173,35 +174,45 @@ function BlocksEditor({ config, updateConfig, onSave, isSaving }: EditorProps) {
               onClick={() => setExpandedBlock(expandedBlock === block.id ? null : block.id)}
             >
               <div className="flex items-center gap-4">
-                <span className="w-8 h-8 flex items-center justify-center bg-purple-500/20 text-purple-400 text-sm font-bold rounded-lg">
+                <span className="w-8 h-8 flex items-center justify-center bg-purple-500/20 text-purple-400 text-sm font-bold rounded-lg shrink-0">
                   {blockIndex + 1}
                 </span>
-                <div className="flex-1">
-                  <Input
-                    value={block.title}
-                    onChange={(e) => { e.stopPropagation(); updateBlock(block.id, { title: e.target.value }); }}
-                    onClick={(e) => e.stopPropagation()}
-                    placeholder="Título do bloco"
-                    className="bg-transparent border-0 text-white text-lg font-semibold p-0 h-auto focus:ring-0"
-                  />
-                  <Input
-                    value={block.subtitle}
-                    onChange={(e) => { e.stopPropagation(); updateBlock(block.id, { subtitle: e.target.value }); }}
-                    onClick={(e) => e.stopPropagation()}
-                    placeholder="Subtítulo"
-                    className="bg-transparent border-0 text-gray-400 text-sm p-0 h-auto focus:ring-0 mt-1"
-                  />
+                <div className="flex-1 space-y-2 py-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-gray-500 ml-1">Título</Label>
+                    <Input
+                      value={block.title}
+                      onChange={(e) => { e.stopPropagation(); updateBlock(block.id, { title: e.target.value }); }}
+                      onClick={(e) => e.stopPropagation()}
+                      placeholder="Título do bloco"
+                      className="bg-gray-900/50 border-gray-700/50 text-white font-semibold focus:bg-gray-900 focus:border-purple-500 transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-gray-500 ml-1">Subtítulo</Label>
+                    <Input
+                      value={block.subtitle}
+                      onChange={(e) => { e.stopPropagation(); updateBlock(block.id, { subtitle: e.target.value }); }}
+                      onClick={(e) => e.stopPropagation()}
+                      placeholder="Subtítulo"
+                      className="bg-gray-900/50 border-gray-700/50 text-gray-300 text-sm focus:bg-gray-900 focus:border-purple-500 transition-colors"
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    "px-2 py-1 rounded text-xs font-mono",
-                    block.links.length >= maxLinks ? "bg-amber-500/20 text-amber-400" : "bg-gray-700 text-gray-400"
-                  )}>
-                    {block.links.length}/{maxLinks}
-                  </span>
+                <div className="flex flex-col items-end gap-2 pl-2">
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "px-2 py-1 rounded text-xs font-mono",
+                      block.links.length >= maxLinks ? "bg-amber-500/20 text-amber-400" : "bg-gray-700 text-gray-400"
+                    )}>
+                      {block.links.length}/{maxLinks}
+                    </span>
+                    <ChevronDown className={cn("w-5 h-5 text-gray-400 transition-transform duration-200", expandedBlock === block.id && "rotate-180")} />
+                  </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }}
                     className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                    title="Excluir bloco"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
